@@ -29,6 +29,13 @@ void TFT_eSPI::loadFont(String fontName, fs::FS &ffs)
 }
 #endif
 
+// Set the character spacing
+void  TFT_eSPI::setTextSpacing(uint8_t size)
+{
+    charSpacing = size;
+}
+
+
 /***************************************************************************************
 ** Function name:           loadFont
 ** Description:             loads parameters from a font vlw file
@@ -435,7 +442,7 @@ void TFT_eSPI::drawGlyph(uint16_t code)
 
     // Fill area above glyph
     if (_fillbg) {
-      fillwidth  = (cursor_x + gxAdvance[gNum]) - bg_cursor_x;
+      fillwidth  = (cursor_x + gxAdvance[gNum] + charSpacing/2) - bg_cursor_x;
       if (fillwidth > 0) {
         fillheight = gFont.maxAscent - gdY[gNum];
         // Could be negative
@@ -453,8 +460,8 @@ void TFT_eSPI::drawGlyph(uint16_t code)
       // Set x position in glyph area where background starts
       if (bg_cursor_x > cx) bx = bg_cursor_x - cx;
       // Fill any area to right of glyph
-      if (cx + gWidth[gNum] < cursor_x + gxAdvance[gNum]) {
-        fillRect(cx + gWidth[gNum], cy, (cursor_x + gxAdvance[gNum]) - (cx + gWidth[gNum]), gHeight[gNum], textbgcolor);
+      if (cx + gWidth[gNum] < cursor_x + gxAdvance[gNum] + (charSpacing+1)/2) {
+        fillRect(cx + gWidth[gNum], cy, (cursor_x + gxAdvance[gNum] + (charSpacing+1)/2) - (cx + gWidth[gNum]), gHeight[gNum], textbgcolor);
       }
     }
 
@@ -528,7 +535,7 @@ void TFT_eSPI::drawGlyph(uint16_t code)
     }
 
     if (pbuffer) free(pbuffer);
-    cursor_x += gxAdvance[gNum];
+    cursor_x += gxAdvance[gNum] + charSpacing;
     endWrite();
   }
   else
@@ -573,7 +580,7 @@ void TFT_eSPI::showFont(uint32_t td)
 
     setCursor(cursorX, cursorY);
     drawGlyph(gUnicode[i]);
-    cursorX += gxAdvance[i];
+    cursorX += gxAdvance[i] + charSpacing;
     yield();
   }
 

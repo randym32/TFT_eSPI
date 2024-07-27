@@ -39,6 +39,7 @@ fontMetrics gFont = { nullptr, 0, 0, 0, 0, 0, 0, 0 };
   int16_t*  gdY = NULL;       //topExtent
   int8_t*   gdX = NULL;       //leftExtent
   uint32_t* gBitmap = NULL;   //file pointer to greyscale bitmap
+  uint8_t   charSpacing;      // The number of extra pixels to add
 
   bool     fontLoaded = false; // Flags when a anti-aliased font is loaded
 

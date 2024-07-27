@@ -406,7 +406,7 @@ bool TFT_eSprite::pushRotated(int16_t angle, uint32_t transp)
   // Get the bounding box of this rotated source Sprite relative to Sprite pivot
   if ( !getRotatedBounds(angle, &min_x, &min_y, &max_x, &max_y) ) return false;
 
-  uint16_t sline_buffer[max_x - min_x + 1];
+  uint16_t* sline_buffer = (uint16_t*)alloca(sizeof(uint16_t) * (max_x - min_x + 1));
 
   int32_t xt = min_x - _tft->_xPivot;
   int32_t yt = min_y - _tft->_yPivot;
@@ -480,7 +480,7 @@ bool TFT_eSprite::pushRotated(TFT_eSprite *spr, int16_t angle, uint32_t transp)
   // Get the bounding box of this rotated source Sprite
   if ( !getRotatedBounds(spr, angle, &min_x, &min_y, &max_x, &max_y) ) return false;
 
-  uint16_t sline_buffer[max_x - min_x + 1];
+  uint16_t* sline_buffer = (uint16_t*)alloca(sizeof(uint16_t) * (max_x - min_x + 1));
 
   int32_t xt = min_x - spr->_xPivot;
   int32_t yt = min_y - spr->_yPivot;
@@ -759,7 +759,7 @@ bool TFT_eSprite::pushToSprite(TFT_eSprite *dspr, int32_t x, int32_t y, uint16_t
   if (_bpp ==  1 && ds_bpp !=  1) return false;
 
   bool oldSwapBytes = dspr->getSwapBytes();
-  uint16_t sline_buffer[width()];
+  uint16_t* sline_buffer = (uint16_t*)alloca(sizeof(uint16_t) * (width()));
 
   transp = transp>>8 | transp<<8;
 
@@ -2503,7 +2503,7 @@ void TFT_eSprite::drawGlyph(uint16_t code)
 
     // Fill area above glyph
     if (_fillbg) {
-      fillwidth  = (cursor_x + gxAdvance[gNum]) - bg_cursor_x;
+      fillwidth  = (cursor_x + gxAdvance[gNum] + charSpacing) - bg_cursor_x;
       if (fillwidth > 0) {
         fillheight = gFont.maxAscent - gdY[gNum];
         if (fillheight > 0) {
@@ -2520,8 +2520,8 @@ void TFT_eSprite::drawGlyph(uint16_t code)
       // Set x position in glyph area where background starts
       if (bg_cursor_x > cx) bx = bg_cursor_x - cx;
       // Fill any area to right of glyph
-      if (cx + gWidth[gNum] < cursor_x + gxAdvance[gNum]) {
-        fillRect(cx + gWidth[gNum], cy, (cursor_x + gxAdvance[gNum]) - (cx + gWidth[gNum]), gHeight[gNum], textbgcolor);
+      if (cx + gWidth[gNum] < cursor_x + gxAdvance[gNum] + charSpacing) {
+        fillRect(cx + gWidth[gNum], cy, (cursor_x + gxAdvance[gNum] + charSpacing) - (cx + gWidth[gNum]), gHeight[gNum], textbgcolor);
       }
     }
 
@@ -2584,7 +2584,7 @@ void TFT_eSprite::drawGlyph(uint16_t code)
     }
 
     if (pbuffer) free(pbuffer);
-    cursor_x += gxAdvance[gNum];
+    cursor_x += gxAdvance[gNum] + charSpacing;
 
     if (newSprite)
     {
@@ -2596,7 +2596,7 @@ void TFT_eSprite::drawGlyph(uint16_t code)
   {
     // Not a Unicode in font so draw a rectangle and move on cursor
     drawRect(cursor_x, cursor_y + gFont.maxAscent - gFont.ascent, gFont.spaceWidth, gFont.ascent, fg);
-    cursor_x += gFont.spaceWidth + 1;
+    cursor_x += gFont.spaceWidth + 1 + charSpacing;
   }
   bg_cursor_x = cursor_x;
   last_cursor_x = cursor_x;

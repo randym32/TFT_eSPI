@@ -15,12 +15,14 @@
 
 #include "TFT_eSPI.h"
 
-#if defined (ESP32)
+#if defined(_MSC_VER)
+  #include "Processors/TFT_eSPI_Win32.c"
+#elif defined (ESP32)
   #if defined(CONFIG_IDF_TARGET_ESP32S3) && CONFIG_IDF_TARGET_ESP32S3
     #include "Processors/TFT_eSPI_ESP32_S3.c" // Tested with SPI and 8-bit parallel
   #elif defined(CONFIG_IDF_TARGET_ESP32C3) && CONFIG_IDF_TARGET_ESP32C3
     #include "Processors/TFT_eSPI_ESP32_C3.c" // Tested with SPI (8-bit parallel will probably work too!)
-  #else
+  #elif defined (CONFIG_IDF_TARGET_ESP32) && CONFIG_IDF_TARGET_ESP32
     #include "Processors/TFT_eSPI_ESP32.c"
   #endif
 #elif defined (ARDUINO_ARCH_ESP8266)
@@ -1484,8 +1486,8 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint16_t *d
 
   data += dx + dy * w;
 
-
-  uint16_t  lineBuf[dw]; // Use buffer to minimise setWindow call count
+  // Use buffer to minimise setWindow call count
+  uint16_t* lineBuf = (uint16_t*)alloca(sizeof(uint16_t) * dw);
 
   // The little endian transp color must be byte swapped if the image is big endian
   if (!_swapBytes) transp = transp >> 8 | transp << 8;
@@ -1544,7 +1546,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
 
   data += dx + dy * w;
 
-  uint16_t  buffer[dw];
+  uint16_t*  buffer=(uint16_t*) alloca(sizeof(uint16_t)*dw);
 
   setWindow(x, y, x + dw - 1, y + dh - 1);
 
@@ -1575,7 +1577,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint1
   data += dx + dy * w;
 
 
-  uint16_t  lineBuf[dw];
+  uint16_t* lineBuf = (uint16_t*)alloca(sizeof(uint16_t) * dw);
 
   // The little endian transp color must be byte swapped if the image is big endian
   if (!_swapBytes) transp = transp >> 8 | transp << 8;
@@ -1631,7 +1633,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, const uint8
   setWindow(x, y, x + dw - 1, y + dh - 1); // Sets CS low and sent RAMWR
 
   // Line buffer makes plotting faster
-  uint16_t  lineBuf[dw];
+  uint16_t* lineBuf = (uint16_t*)alloca(sizeof(uint16_t) * dw);
 
   if (bpp8)
   {
@@ -1764,7 +1766,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
   setWindow(x, y, x + dw - 1, y + dh - 1); // Sets CS low and sent RAMWR
 
   // Line buffer makes plotting faster
-  uint16_t  lineBuf[dw];
+  uint16_t* lineBuf = (uint16_t*)alloca(sizeof(uint16_t) * dw);
 
   if (bpp8)
   {
@@ -1896,7 +1898,7 @@ void TFT_eSPI::pushImage(int32_t x, int32_t y, int32_t w, int32_t h, uint8_t *da
 
 
   // Line buffer makes plotting faster
-  uint16_t  lineBuf[dw];
+  uint16_t* lineBuf = (uint16_t*)alloca(sizeof(uint16_t) * dw);
 
   if (bpp8) { // 8 bits per pixel
     _swapBytes = false;
@@ -3052,7 +3054,7 @@ int16_t TFT_eSPI::height(void)
 int16_t TFT_eSPI::textWidth(const String& string)
 {
   int16_t len = string.length() + 2;
-  char buffer[len];
+  char* buffer = (char*)alloca(sizeof(char) * len);
   string.toCharArray(buffer, len);
   return textWidth(buffer, textfont);
 }
@@ -3060,7 +3062,7 @@ int16_t TFT_eSPI::textWidth(const String& string)
 int16_t TFT_eSPI::textWidth(const String& string, uint8_t font)
 {
   int16_t len = string.length() + 2;
-  char buffer[len];
+  char* buffer = (char*)alloca(sizeof(char) * len);
   string.toCharArray(buffer, len);
   return textWidth(buffer, font);
 }
@@ -5481,7 +5483,7 @@ int16_t TFT_eSPI::drawChar(uint16_t uniCode, int32_t x, int32_t y, uint8_t font)
 int16_t TFT_eSPI::drawString(const String& string, int32_t poX, int32_t poY)
 {
   int16_t len = string.length() + 2;
-  char buffer[len];
+  char* buffer = (char*)alloca(sizeof(char) * len);
   string.toCharArray(buffer, len);
   return drawString(buffer, poX, poY, textfont);
 }
@@ -5489,7 +5491,7 @@ int16_t TFT_eSPI::drawString(const String& string, int32_t poX, int32_t poY)
 int16_t TFT_eSPI::drawString(const String& string, int32_t poX, int32_t poY, uint8_t font)
 {
   int16_t len = string.length() + 2;
-  char buffer[len];
+  char* buffer = (char*)alloca(sizeof(char) * len);
   string.toCharArray(buffer, len);
   return drawString(buffer, poX, poY, font);
 }
@@ -5730,7 +5732,7 @@ return sumX;
 int16_t TFT_eSPI::drawCentreString(const String& string, int32_t dX, int32_t poY, uint8_t font)
 {
   int16_t len = string.length() + 2;
-  char buffer[len];
+  char* buffer = (char*)alloca(sizeof(char) * len);
   string.toCharArray(buffer, len);
   return drawCentreString(buffer, dX, poY, font);
 }
@@ -5753,7 +5755,7 @@ int16_t TFT_eSPI::drawCentreString(const char *string, int32_t dX, int32_t poY, 
 int16_t TFT_eSPI::drawRightString(const String& string, int32_t dX, int32_t poY, uint8_t font)
 {
   int16_t len = string.length() + 2;
-  char buffer[len];
+  char* buffer = (char*)alloca(sizeof(char) * len);
   string.toCharArray(buffer, len);
   return drawRightString(buffer, dX, poY, font);
 }

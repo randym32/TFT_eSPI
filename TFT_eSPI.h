@@ -93,7 +93,9 @@
 #endif
 
 // Include the processor specific drivers
-#if defined(CONFIG_IDF_TARGET_ESP32S3) && CONFIG_IDF_TARGET_ESP32S3
+#if defined(_MSC_VER)
+  #include "Processors/TFT_eSPI_Win32.h"
+#elif defined(CONFIG_IDF_TARGET_ESP32S3) && CONFIG_IDF_TARGET_ESP32S3
   #include "Processors/TFT_eSPI_ESP32_S3.h"
 #elif defined(CONFIG_IDF_TARGET_ESP32C3) && CONFIG_IDF_TARGET_ESP32C3
   #include "Processors/TFT_eSPI_ESP32_C3.h"
@@ -360,7 +362,7 @@ static const uint16_t default_4bit_palette[] PROGMEM = {
 
 // This structure allows sketches to retrieve the user setup parameters at runtime
 // by calling getSetup(), zero impact on code size unless used, mainly for diagnostics
-typedef struct
+typedef struct setup_t
 {
 String  version = TFT_ESPI_VERSION;
 String  setup_info;  // Setup reference name available to use in a user setup
@@ -660,6 +662,7 @@ class TFT_eSPI : public Print { friend class TFT_eSprite; // Sprite class has ac
   void     setTextColor(uint16_t color),                    // Set character (glyph) color only (background not over-written)
            setTextColor(uint16_t fgcolor, uint16_t bgcolor, bool bgfill = false),  // Set character (glyph) foreground and background colour, optional background fill for smooth fonts
            setTextSize(uint8_t size);                       // Set character size multiplier (this increases pixel size)
+  void     setTextSpacing(uint8_t size);                    // Set the character spacing
 
   void     setTextWrap(bool wrapX, bool wrapY = false);     // Turn on/off wrapping of text in TFT width and/or height
 
